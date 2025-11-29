@@ -8,7 +8,9 @@ import {
   Calendar,
   Grid3X3,
   List,
-  SortAsc
+  SortAsc,
+  FileText,
+  Download
 } from 'lucide-react';
 import info from "../data/information.json";
 import ProfilCard from "../components/ProfilCard";
@@ -46,6 +48,250 @@ export default function Etudiant() {
 
   // Obtenir les classes uniques
   const uniqueClasses = [...new Set(info.map(student => student.classe).filter(Boolean))];
+
+  // Fonction pour générer le CV
+  const generateCV = (student) => {
+    const cvContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>CV - ${student.nom} ${student.prenom}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            line-height: 1.6; 
+            color: #2c3e50;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .cv-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #137fec 0%, #1e3c72 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="2" fill="%23ffffff" opacity="0.1"/><circle cx="80" cy="40" r="1" fill="%23ffffff" opacity="0.1"/><circle cx="40" cy="80" r="1.5" fill="%23ffffff" opacity="0.1"/></svg>');
+        }
+        .name {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+        .title {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            margin-bottom: 35px;
+        }
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #137fec;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8f4fd;
+            position: relative;
+        }
+        .section-title::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: #137fec;
+        }
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        .contact-item {
+            background: linear-gradient(135deg, #f8faff 0%, #e8f4fd 100%);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid #137fec;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s;
+        }
+        .contact-item:hover {
+            transform: translateY(-2px);
+        }
+        .contact-icon {
+            width: 24px;
+            height: 24px;
+            background: #137fec;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        .skills-category {
+            margin-bottom: 25px;
+            background: #f8faff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e8f4fd;
+        }
+        .category-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+        .skills-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .skill-tag {
+            background: linear-gradient(135deg, #137fec 0%, #1e3c72 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 2px 10px rgba(19, 127, 236, 0.3);
+            transition: transform 0.2s;
+        }
+        .skill-tag:hover {
+            transform: scale(1.05);
+        }
+        .speciality-item {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            font-weight: 500;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .speciality-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: rgba(255,255,255,0.3);
+        }
+        @media print {
+            body { background: white; padding: 0; }
+            .cv-container { box-shadow: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="cv-container">
+        <div class="header">
+            <div class="name">${student.nom} ${student.prenom}</div>
+            <div class="title">Étudiant en Informatique - Niveau L2</div>
+        </div>
+        
+        <div class="content">
+            <div class="section">
+                <div class="section-title">Contact</div>
+                <div class="contact-grid">
+                    ${student.contact?.map(contact => {
+                      const key = Object.keys(contact)[0];
+                      const value = contact[key];
+                      if (key === 'telephone' && Array.isArray(value)) {
+                        return value.map(tel => `
+                            <div class="contact-item">
+                                <div class="contact-icon">📞</div>
+                                <span>${tel}</span>
+                            </div>
+                        `).join('');
+                      }
+                      const icon = key === 'email' ? '📧' : key === 'linkedin' ? '💼' : key === 'github' ? '🔗' : key === 'facebook' ? '📘' : '🌐';
+                      return `
+                        <div class="contact-item">
+                            <div class="contact-icon">${icon}</div>
+                            <span>${value}</span>
+                        </div>
+                      `;
+                    }).join('') || ''}
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Compétences Techniques</div>
+                ${student.competence?.map(comp => {
+                  const category = Object.keys(comp)[0];
+                  const skills = comp[category];
+                  const categoryNames = {
+                    'bureautique': 'Bureautique',
+                    'infographie': 'Infographie',
+                    'analyse': 'Analyse & Conception',
+                    'digna': 'Design',
+                    'langage': 'Langages de Programmation',
+                    'backend': 'Backend & Services',
+                    'baseDonne': 'Bases de Données'
+                  };
+                  return `
+                    <div class="skills-category">
+                        <div class="category-name">${categoryNames[category] || category}</div>
+                        <div class="skills-list">
+                            ${skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                        </div>
+                    </div>
+                  `;
+                }).join('') || ''}
+            </div>
+            
+            <div class="section">
+                <div class="section-title">Domaines de Spécialité</div>
+                ${student.specialite?.map(spec => `<div class="speciality-item">${spec}</div>`).join('') || ''}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+    
+    const blob = new Blob([cvContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `CV_${student.nom}_${student.prenom}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-8">
@@ -212,7 +458,16 @@ export default function Etudiant() {
                 }`}
               >
                 {viewMode === 'grid' ? (
-                  <ProfilCard data={user} />
+                  <div className="relative">
+                    <ProfilCard data={user} />
+                    <button
+                      onClick={() => generateCV(user)}
+                      className="absolute top-4 right-4 flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200 shadow-lg"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span className="text-sm">CV</span>
+                    </button>
+                  </div>
                 ) : (
                   <div className="p-6 flex items-center gap-6">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
@@ -229,7 +484,14 @@ export default function Etudiant() {
                         {user.email}
                       </p>
                     </div>
-                    <div className="text-right">
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => generateCV(user)}
+                        className="flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                      >
+                        <FileText className="w-4 h-4" />
+                        <span className="text-sm">CV</span>
+                      </button>
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-900/30 text-blue-300">
                         {user.classe}
                       </span>
