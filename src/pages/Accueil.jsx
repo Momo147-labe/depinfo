@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
   const slides = [
     {
-      image: "public/dep.png",
+      image: "/dep.png",
       text: "Bienvenue au département informatique – Licence 2",
     },
     {
@@ -31,7 +31,7 @@ import { useEffect, useState } from "react";
       <div className="section-padding container-custom">
   
         {/* 🔥 CAROUSEL */}
-        <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden glass-card shadow-card animate-fade-in">
+        <div className="relative h-80 md:h-[80vh] rounded-2xl overflow-hidden glass-card shadow-card animate-fade-in">
           
           {/* Image */}
           <img

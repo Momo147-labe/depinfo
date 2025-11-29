@@ -25,32 +25,5 @@
         "specialite":[
             "Developpement web","backend","infographite"
         ]
-    },
-    {
-        "profil":"/profile/momo.png",
-        "nom":"Soumah",
-        "prenom":"fode Momo",
-        "telephone":["627 17 25 30","666 76 10 76"],
-        "contact":[
-            {"email":"fodemomos11@gmail.com"},
-            {"facebook":"facebook.com/fodemomomos"},
-            {"whatshap":"wwhashap.com/fodemomomos"},
-            {"linkedin":"linkedin.com/fodemomomos"},
-            {"github":"github.com/momo1212"},
-            {"tiktok":"tiktok.com/momo22422"},
-            {"portfolio":"porfolior.onrender.com"}
-        ],
-        "competence":[
-           {"bureautique":["Word","PowerPoint","Excel","publishat"]},
-           {"infographie":["photoshop","illustrator"]},
-           {"analyse":["Merise/CSI","UML"]},
-           {"digna":["figma","lunacy"]},
-           {"langage":["HTML/CSS","JAVASCRIPT","TAILWINDCSS"]},
-           {"backend":["nodejs","Supabase","firebase"]},
-           {"baseDonne":["MYSQL", "Postgre","MongoDB","SQLITE"]}
-        ],
-        "specialite":[
-            "Developpement web","backend","infographite"
-        ]
     }
 ]
