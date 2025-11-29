@@ -75,7 +75,7 @@ export default function Accueil() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       
       {/* Hero Section avec Carousel */}
       <div className="relative h-[70vh] overflow-hidden">
@@ -147,12 +147,12 @@ export default function Accueil() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickStats.map((stat, index) => (
-              <div key={index} className="backdrop-blur-md bg-white/80 dark:bg-gray-800/80 rounded-2xl p-6 text-center shadow-xl border border-white/20 hover:scale-105 transition-transform duration-300">
+              <div key={index} className="backdrop-blur-md bg-gray-800/80 rounded-2xl p-6 text-center shadow-xl border border-gray-700/30 hover:scale-105 transition-transform duration-300">
                 <stat.icon className={`w-8 h-8 mx-auto mb-3 ${stat.color}`} />
-                <div className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                <div className="text-2xl font-bold text-white mb-1">
                   {stat.value}
                 </div>
-                <div className="text-sm text-gray-600 dark:text-gray-400">
+                <div className="text-sm text-gray-400">
                   {stat.label}
                 </div>
               </div>
@@ -167,10 +167,10 @@ export default function Accueil() {
           
           {/* Section Header */}
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
               Votre Plateforme d'Apprentissage
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
               Découvrez tous les outils et ressources nécessaires pour réussir votre parcours universitaire
             </p>
           </div>
@@ -179,7 +179,7 @@ export default function Accueil() {
           <div className="grid md:grid-cols-3 gap-8">
             {features.map((feature, index) => (
               <div key={index} className="group relative">
-                <div className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl p-8 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
+                <div className="backdrop-blur-md bg-gray-800/70 rounded-2xl p-8 shadow-xl border border-gray-700/30 hover:shadow-2xl transition-all duration-500 hover:-translate-y-2">
                   
                   {/* Icon with Gradient */}
                   <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.color} p-4 mb-6 group-hover:scale-110 transition-transform duration-300`}>
@@ -189,20 +189,20 @@ export default function Accueil() {
                   {/* Content */}
                   <div className="mb-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-xl font-bold text-white">
                         {feature.title}
                       </h3>
-                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded-lg">
+                      <span className="text-sm font-semibold text-blue-400 bg-blue-900/30 px-2 py-1 rounded-lg">
                         {feature.stats}
                       </span>
                     </div>
-                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                    <p className="text-gray-300 leading-relaxed">
                       {feature.description}
                     </p>
                   </div>
                   
                   {/* Action Button */}
-                  <button className="inline-flex items-center text-blue-600 dark:text-blue-400 font-semibold hover:text-blue-700 dark:hover:text-blue-300 transition-colors group-hover:translate-x-1">
+                  <button className="inline-flex items-center text-blue-400 font-semibold hover:text-blue-300 transition-colors group-hover:translate-x-1">
                     Explorer
                     <ChevronRight className="w-4 h-4 ml-1" />
                   </button>

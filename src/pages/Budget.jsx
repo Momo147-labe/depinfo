@@ -418,9 +418,9 @@ export default function App() {
   // Utilisation d'un bloc style pour définir les classes personnalisées
   const customStyles = `
     /* Définitions des couleurs */
-    .text-dark-text { color: ${COLORS['dark-text']}; }
-    .text-dark-text-secondary { color: ${COLORS['dark-text-secondary']}; }
-    .bg-dark-card { background-color: ${COLORS['dark-card']}; }
+    .text-dark-text { color: #ffffff; }
+    .text-dark-text-secondary { color: #92adc9; }
+    .bg-dark-card { background-color: #1a2836; }
     
     /* Styles du bouton Primaire */
     .btn-primary { 
@@ -445,7 +445,7 @@ export default function App() {
 
     /* Carte moderne (fond sombre) */
     .card-modern {
-      background-color: ${COLORS['dark-card']};
+      background-color: #1a2836;
       border-radius: 1rem;
       border: 1px solid rgba(255, 255, 255, 0.1);
       backdrop-filter: blur(10px);
@@ -453,7 +453,7 @@ export default function App() {
 
     /* Navigation effet glass */
     .glass-nav {
-        background-color: rgba(26, 40, 54, 0.7); /* dark-card with transparency */
+        background-color: rgba(26, 40, 54, 0.7);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }
@@ -501,7 +501,7 @@ export default function App() {
   `;
 
   return (
-    <div className={`relative min-h-screen font-inter bg-background-dark text-dark-text`}> 
+    <div className={`relative min-h-screen font-inter bg-slate-900 text-white`}> 
       
       {/* 0. Styles CSS pour rendre le composant autonome */}
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
