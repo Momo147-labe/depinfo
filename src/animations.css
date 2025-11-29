@@ -1,0 +1,192 @@
+/* Animations personnalisées pour SubjectsPage */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(40px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.9); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 0.8s ease-out forwards;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.4s ease-out forwards;
+}
+
+/* Animations avec délais */
+.animate-fade-in-delay-1 {
+  animation: fadeIn 0.6s ease-out 0.2s forwards;
+}
+
+.animate-fade-in-delay-2 {
+  animation: fadeIn 0.6s ease-out 0.4s forwards;
+}
+
+.animate-slide-up-delay-1 {
+  animation: slideUp 0.8s ease-out 0.2s forwards;
+}
+
+.animate-slide-up-delay-2 {
+  animation: slideUp 0.8s ease-out 0.4s forwards;
+}
+
+/* Animations pour les cartes avec délai progressif */
+.animate-card-delay {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Effets de survol améliorés */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Animations de chargement */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Animations de rotation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+/* Animations de rebond */
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% {
+    animation-timing-function: cubic-bezier(0.215, 0.61, 0.355, 1);
+    transform: translate3d(0, 0, 0);
+  }
+  40%, 43% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -30px, 0);
+  }
+  70% {
+    animation-timing-function: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    transform: translate3d(0, -15px, 0);
+  }
+  90% {
+    transform: translate3d(0, -4px, 0);
+  }
+}
+
+.animate-bounce-slow {
+  animation: bounce 2s infinite;
+}
+
+
+body {
+            position: relative;
+            overflow-x: hidden;
+        }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: #0d7ff2;
+            opacity: 0.1;
+            animation: float 20s infinite ease-in-out;
+        }
+        .particle.p1 { width: 150px; height: 150px; top: 10%; left: 5%; animation-duration: 25s; }
+        .particle.p2 { width: 200px; height: 200px; top: 20%; right: 10%; animation-duration: 30s; }
+        .particle.p3 { width: 100px; height: 100px; bottom: 15%; left: 20%; animation-duration: 22s; }
+        .particle.p4 { width: 250px; height: 250px; bottom: 5%; right: 15%; animation-duration: 28s; }
+        @keyframes float {
+            0% { transform: translateY(0px) translateX(0px); }
+            50% { transform: translateY(-30px) translateX(20px); }
+            100% { transform: translateY(0px) translateX(0px); }
+        }
+        .frosted-glass {
+            background-color: rgba(16, 25, 34, 0.7);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+            border-bottom-width: 1px;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .skill-card {
+            background: rgba(167, 172, 180, 0.5); /* A slightly lighter dark gray with opacity */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); /* For Safari */
+            border: 1px solid rgba(56, 73, 99, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .skill-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px 0 rgba(13, 127, 242, 0.4), 0 0 40px 0 rgba(13, 127, 242, 0.2);
+            border-color: rgba(13, 127, 242, 0.7);
+        }
+
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.05);
+            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
