@@ -10,7 +10,10 @@ import {
   ArrowUp,
   ArrowDown,
   Menu,
-  X, // Ajouté pour le bouton de fermeture du menu mobile
+  X,
+  TrendingUp,
+  PieChart,
+  Calendar
 } from 'lucide-react';
 import { 
   Search, 
@@ -19,9 +22,6 @@ import {
   Download, 
   Users, 
   DollarSign, 
-  CheckCircle, 
-  XCircle, 
-  Calendar,
   Loader2,
   AlertCircle
 } from 'lucide-react';
@@ -35,9 +35,8 @@ const COLORS = {
   'dark-text-secondary': '#92adc9',
 };
 
- const somme = data.reduce((somme, item) => somme + (item.tranche1 + item.tranche2 + item.tranche3 + item.tranche4), 0)
- const tail=info.length
-// --- Données Statiques (Imaginaires) ---
+const somme = data.reduce((somme, item) => somme + (item.tranche1 + item.tranche2 + item.tranche3 + item.tranche4), 0)
+const tail=info.length
 
 const NAV_LINKS = [
   { key: 'dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
@@ -48,15 +47,13 @@ const NAV_LINKS = [
 
 const STATS_DATA = [
   { title: 'Solde Actuel', value: `${formate(somme)} GNF `, change: '+2.5% vs mois dernier', color: 'text-green-400', icon: Wallet },
-  { title: 'Revenus (trimestre)', value: `${formate(25000*62)} GNF`, change: '+15% vs mois dernier', color: 'text-green-400', icon: ArrowUp },
-  { title: 'Dépenses (ce mois-ci)', value: 'pas de depande', change: '+0% vs mois dernier', color: 'text-red-400', icon: ArrowDown },
+  { title: 'Revenus (semestre)', value: `${formate(25000*62)} GNF`, change: '+15% vs semestre dernier', color: 'text-green-400', icon: ArrowUp },
+  { title: 'Frais administratifs', value: 'Aucun frais', change: '+0% vs semestre dernier', color: 'text-red-400', icon: ArrowDown },
 ];
-
 
 function formate(n){
   return Number(n).toLocaleString("fr-FR")
 }
-
 
 // ==========================================================
 // Composant 2 : StatCard (Carte de Statistique Réutilisable)
@@ -83,9 +80,135 @@ function StatCard({ title, value, change, color, Icon }) {
   );
 }
 
+// ==========================================================
+// Composant 3 : Charts (Graphiques des Tranches)
+// ==========================================================
+function Charts() {
+  // Calcul des totaux par tranche
+  const trancheData = [
+    {
+      name: 'Tranche 1',
+      total: data.reduce((sum, student) => sum + student.tranche1, 0),
+      color: 'bg-blue-500',
+      gradient: 'from-blue-500 to-blue-400'
+    },
+    {
+      name: 'Tranche 2', 
+      total: data.reduce((sum, student) => sum + student.tranche2, 0),
+      color: 'bg-green-500',
+      gradient: 'from-green-500 to-green-400'
+    },
+    {
+      name: 'Tranche 3',
+      total: data.reduce((sum, student) => sum + student.tranche3, 0), 
+      color: 'bg-yellow-500',
+      gradient: 'from-yellow-500 to-yellow-400'
+    },
+    {
+      name: 'Tranche 4',
+      total: data.reduce((sum, student) => sum + student.tranche4, 0),
+      color: 'bg-purple-500', 
+      gradient: 'from-purple-500 to-purple-400'
+    }
+  ];
+
+  const maxTotal = Math.max(...trancheData.map(t => t.total));
+
+  return (
+    <div className="space-y-8">
+      {/* Graphique en barres - Comparaison des tranches */}
+      <div className="card-modern p-6">
+        <div className="flex items-center gap-3 mb-6">
+          <BarChartBig className="w-6 h-6 text-blue-400" />
+          <h3 className="text-xl font-semibold text-white">Comparaison des Tranches de Paiement</h3>
+        </div>
+        
+        <div className="flex items-end justify-between h-64 gap-4">
+          {trancheData.map((tranche, index) => {
+            const height = (tranche.total / maxTotal) * 100;
+            return (
+              <div key={index} className="flex flex-col items-center flex-1">
+                <div className="w-full flex flex-col items-center">
+                  <span className="text-xs text-gray-400 mb-2">
+                    {formate(tranche.total)} GNF
+                  </span>
+                  <div 
+                    className={`w-full bg-gradient-to-t ${tranche.gradient} rounded-t-lg transition-all duration-1000`}
+                    style={{ height: `${height}%` }}
+                  />
+                </div>
+                <span className="text-sm text-gray-300 mt-2">{tranche.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Statistiques des tranches */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="card-modern p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <PieChart className="w-6 h-6 text-green-400" />
+            <h3 className="text-xl font-semibold text-white">Répartition par Tranche</h3>
+          </div>
+          
+          <div className="space-y-4">
+            {trancheData.map((tranche, index) => {
+              const percentage = ((tranche.total / somme) * 100).toFixed(1);
+              return (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full ${tranche.color}`} />
+                      <span className="text-sm text-gray-300">{tranche.name}</span>
+                    </div>
+                    <span className="text-sm font-medium text-white">
+                      {formate(tranche.total)} GNF ({percentage}%)
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className={`bg-gradient-to-r ${tranche.gradient} h-2 rounded-full transition-all duration-1000`}
+                      style={{width: `${percentage}%`}}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Moyennes par tranche */}
+        <div className="card-modern p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <TrendingUp className="w-6 h-6 text-purple-400" />
+            <h3 className="text-lg font-semibold text-white">Moyennes par Tranche</h3>
+          </div>
+          
+          <div className="space-y-4">
+            {trancheData.map((tranche, index) => {
+              const moyenne = Math.round(tranche.total / data.length);
+              return (
+                <div key={index} className="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${tranche.color}`} />
+                    <span className="text-gray-300">{tranche.name}</span>
+                  </div>
+                  <span className="text-white font-semibold">
+                    {formate(moyenne)} GNF
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ==========================================================
-// Composant 3 : TransactionsTable (Tableau des transactions)
+// Composant 4 : TransactionsTable (Tableau des transactions)
 // ==========================================================
 function TransactionsTable() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -405,24 +528,18 @@ function DashboardView() {
   );
 }
 
-
 // ==========================================================
 // Composant Principal : App
-// Intégration des styles CSS pour garantir la cohérence
 // ==========================================================
 export default function App() {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  
-  // Utilisation d'un bloc style pour définir les classes personnalisées
   const customStyles = `
-    /* Définitions des couleurs */
     .text-dark-text { color: #ffffff; }
     .text-dark-text-secondary { color: #92adc9; }
     .bg-dark-card { background-color: #1a2836; }
     
-    /* Styles du bouton Primaire */
     .btn-primary { 
       background-color: ${COLORS.primary}; 
       color: white; 
@@ -432,7 +549,6 @@ export default function App() {
     }
     .btn-primary:hover { background-color: #106fcc; }
 
-    /* Styles du bouton Secondaire */
     .btn-secondary {
       background-color: ${COLORS['dark-card']};
       color: ${COLORS['dark-text']};
@@ -443,7 +559,6 @@ export default function App() {
     }
     .btn-secondary:hover { background-color: #2a3f55; }
 
-    /* Carte moderne (fond sombre) */
     .card-modern {
       background-color: #1a2836;
       border-radius: 1rem;
@@ -451,26 +566,19 @@ export default function App() {
       backdrop-filter: blur(10px);
     }
 
-    /* Navigation effet glass */
     .glass-nav {
         background-color: rgba(26, 40, 54, 0.7);
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
     }
 
-    /* Effets visuels */
     .shadow-card {
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
     .shadow-glow {
       box-shadow: 0 0 20px rgba(19, 127, 236, 0.4), 0 8px 32px rgba(0, 0, 0, 0.12);
     }
-    
-    .shadow-inner-glow {
-        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
-    }
 
-    /* Particules d'arrière-plan */
     @keyframes move {
         0% { transform: translate(0, 0) scale(1); }
         50% { transform: translate(300px, 100px) scale(1.2); }
@@ -492,9 +600,8 @@ export default function App() {
     .p3 { top: 50%; right: 40%; animation-duration: 30s; animation-delay: 10s; }
     .p4 { bottom: 5%; left: 30%; animation-duration: 22s; animation-delay: 2s; }
 
-    /* Conteneur pour limiter la largeur sur desktop */
     .container-custom {
-        max-width: 1280px; /* Equivalent à max-w-7xl ou un peu moins */
+        max-width: 1280px;
         margin-left: auto;
         margin-right: auto;
     }
@@ -503,21 +610,15 @@ export default function App() {
   return (
     <div className={`relative min-h-screen font-inter bg-slate-900 text-white`}> 
       
-      {/* 0. Styles CSS pour rendre le composant autonome */}
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
 
-      {/* --- Particules d'arrière-plan --- */}
       <div className="particle p1"></div>
       <div className="particle p2"></div>
       <div className="particle p3"></div>
       <div className="particle p4"></div>
       
       <div className="flex min-h-screen font-inter relative z-10">
-        
-        
-        {/* 2. Contenu principal et Header mobile */}
         <div className="flex-1 flex flex-col">
-            {/* Header Mobile (visible uniquement sur les petits écrans) */}
             <header className='lg:hidden flex justify-between items-center w-full p-4 glass-nav sticky top-0 z-20 border-b border-primary-800/50'>
                 <h1 className="text-dark-text text-xl font-semibold">
                     {NAV_LINKS.find(link => link.key === currentPage)?.label || 'Budget Classe'}
@@ -527,10 +628,12 @@ export default function App() {
                 </button>
             </header>
 
-            {/* Main Content Area */}
             <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
                 <div className="container-custom max-w-7xl">
                     <DashboardView />
+                    <div className="mt-8">
+                        <Charts />
+                    </div>
                     <div className="mt-8">
                         <TransactionsTable />
                     </div>

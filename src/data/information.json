@@ -8,6 +8,33 @@
             {"email":"fodemomos11@gmail.com"},
             {"facebook":"facebook.com/fodemomomos"},
             {"whatshap":"wwhashap.com/fodemomomos"},
+            {"linkedin":"https://www.linkedin.com/in/fode-momo-soumah-aaa609397?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"},
+            {"github":"github.com/Momo147-labe"},
+            {"tiktok":"tiktok.com/momo22422"},
+            {"portfolio":"portfolio-ri0o.onrender.com"}
+        ],
+        "competence":[
+           {"bureautique":["Word","PowerPoint","Excel","publishat"]},
+           {"infographie":["photoshop","illustrator"]},
+           {"analyse":["Merise/CSI","UML"]},
+           {"digna":["figma","lunacy"]},
+           {"langage":["HTML/CSS","JAVASCRIPT","TAILWINDCSS"]},
+           {"backend":["nodejs","Supabase","firebase"]},
+           {"baseDonne":["MYSQL", "Postgre","MongoDB","SQLITE"]}
+        ],
+        "specialite":[
+            "Developpement web","backend","infographite"
+        ]
+    },
+      {
+        "profil":"/profile/alge.jpeg",
+        "nom":"Bangoura",
+        "prenom":"Alhassane",
+        "contact":[
+            {"telephone":["620 46 55 82","664 66 62 66"]},
+            {"email":"alha6204@gmail.com"},
+            {"facebook":"facebook.com/fodemomomos"},
+            {"whatshap":"wwhashap.com/fodemomomos"},
             {"linkedin":"linkedin.com/fodemomomos"},
             {"github":"github.com/momo1212"},
             {"tiktok":"tiktok.com/momo22422"},
