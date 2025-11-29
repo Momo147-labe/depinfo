@@ -46,7 +46,7 @@
 
 @layer components {
   .glass-card {
-    background-color: rgba(10, 20, 34, 0.7);
+    background-color: rgba(71, 92, 122, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(51, 184, 255, 0.06);
     box-shadow: 0 8px 32px rgba(2, 8, 23, 0.6);
