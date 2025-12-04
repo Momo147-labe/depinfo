@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import data from "../data/paiements.json"
 import info from "../data/information.json"
+import depenses from "../data/depenses.json"
 import {
   LayoutDashboard,
   ReceiptText,
@@ -35,7 +36,9 @@ const COLORS = {
   'dark-text-secondary': '#92adc9',
 };
 
-const somme = data.reduce((somme, item) => somme + (item.tranche1 + item.tranche2 + item.tranche3 + item.tranche4), 0)
+const somme = data.reduce((somme, item) => somme + (item.tranche1 + item.tranche2 + item.tranche3 + item.tranche4 + item.tranche5 + item.tranche6 + item.tranche7 + item.tranche8 + item.tranche9), 0)
+const totalDepenses = depenses.reduce((total, depense) => total + depense.montant, 0)
+const soldeActuel = somme - totalDepenses
 const tail=info.length
 
 const NAV_LINKS = [
@@ -46,9 +49,10 @@ const NAV_LINKS = [
 ];
 
 const STATS_DATA = [
-  { title: 'Solde Actuel', value: `${formate(somme)} GNF `, change: '+2.5% vs mois dernier', color: 'text-green-400', icon: Wallet },
-  { title: 'Revenus (semestre)', value: `${formate(25000*62)} GNF`, change: '+15% vs semestre dernier', color: 'text-green-400', icon: ArrowUp },
-  { title: 'Frais administratifs', value: 'Aucun frais', change: '+0% vs semestre dernier', color: 'text-red-400', icon: ArrowDown },
+  { title: 'Solde Actuel', value: `${formate(soldeActuel)} GNF`, change: `${soldeActuel >= 0 ? '+' : ''}${((soldeActuel/somme)*100).toFixed(1)}%`, color: soldeActuel >= 0 ? 'text-green-400' : 'text-red-400', icon: Wallet },
+  { title: 'Revenus totaux', value: `${formate(somme)} GNF`, change: `${data.length} paiements`, color: 'text-green-400', icon: ArrowUp },
+  { title: 'Dépenses totales', value: `${formate(totalDepenses)} GNF`, change: `${depenses.length} transactions`, color: 'text-red-400', icon: ArrowDown },
+  { title: 'Montant brut', value: `${formate(somme)} GNF`, change: 'Sans déduction', color: 'text-blue-400', icon: ReceiptText },
 ];
 
 function formate(n){
@@ -60,7 +64,7 @@ function formate(n){
 // ==========================================================
 function StatCard({ title, value, change, color, Icon }) {
   return (
-    <div className="card-modern p-6 shadow-card hover:shadow-glow transition-all duration-300 hover:scale-105">
+    <div className="mx-auto max-w-sm sm:max-w-none card-modern p-6 shadow-card hover:shadow-glow transition-all duration-300 hover:scale-105">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <p className="text-dark-text-secondary text-sm font-medium uppercase tracking-wide">{title}</p>
@@ -86,30 +90,15 @@ function StatCard({ title, value, change, color, Icon }) {
 function Charts() {
   // Calcul des totaux par tranche
   const trancheData = [
-    {
-      name: 'Tranche 1',
-      total: data.reduce((sum, student) => sum + student.tranche1, 0),
-      color: 'bg-blue-500',
-      gradient: 'from-blue-500 to-blue-400'
-    },
-    {
-      name: 'Tranche 2', 
-      total: data.reduce((sum, student) => sum + student.tranche2, 0),
-      color: 'bg-green-500',
-      gradient: 'from-green-500 to-green-400'
-    },
-    {
-      name: 'Tranche 3',
-      total: data.reduce((sum, student) => sum + student.tranche3, 0), 
-      color: 'bg-yellow-500',
-      gradient: 'from-yellow-500 to-yellow-400'
-    },
-    {
-      name: 'Tranche 4',
-      total: data.reduce((sum, student) => sum + student.tranche4, 0),
-      color: 'bg-purple-500', 
-      gradient: 'from-purple-500 to-purple-400'
-    }
+    { name: 'T1', total: data.reduce((sum, student) => sum + student.tranche1, 0), color: 'bg-blue-500', gradient: 'from-blue-500 to-blue-400' },
+    { name: 'T2', total: data.reduce((sum, student) => sum + student.tranche2, 0), color: 'bg-green-500', gradient: 'from-green-500 to-green-400' },
+    { name: 'T3', total: data.reduce((sum, student) => sum + student.tranche3, 0), color: 'bg-yellow-500', gradient: 'from-yellow-500 to-yellow-400' },
+    { name: 'T4', total: data.reduce((sum, student) => sum + student.tranche4, 0), color: 'bg-purple-500', gradient: 'from-purple-500 to-purple-400' },
+    { name: 'T5', total: data.reduce((sum, student) => sum + student.tranche5, 0), color: 'bg-red-500', gradient: 'from-red-500 to-red-400' },
+    { name: 'T6', total: data.reduce((sum, student) => sum + student.tranche6, 0), color: 'bg-indigo-500', gradient: 'from-indigo-500 to-indigo-400' },
+    { name: 'T7', total: data.reduce((sum, student) => sum + student.tranche7, 0), color: 'bg-pink-500', gradient: 'from-pink-500 to-pink-400' },
+    { name: 'T8', total: data.reduce((sum, student) => sum + student.tranche8, 0), color: 'bg-orange-500', gradient: 'from-orange-500 to-orange-400' },
+    { name: 'T9', total: data.reduce((sum, student) => sum + student.tranche9, 0), color: 'bg-teal-500', gradient: 'from-teal-500 to-teal-400' }
   ];
 
   const maxTotal = Math.max(...trancheData.map(t => t.total));
@@ -208,12 +197,159 @@ function Charts() {
 }
 
 // ==========================================================
-// Composant 4 : TransactionsTable (Tableau des transactions)
+// Composant 4 : DepensesTable (Tableau des dépenses)
+// ==========================================================
+function DepensesTable() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const filteredDepenses = depenses.filter(depense => {
+    return searchTerm === '' || 
+      depense.auteur?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      depense.cause?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      depense.description?.toLowerCase().includes(searchTerm.toLowerCase());
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center md:text-left">
+        <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+          <div className="p-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-600 text-white shadow-lg">
+            <ArrowDown className="w-8 h-8" />
+          </div>
+          <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-600 to-pink-600 bg-clip-text text-transparent">
+            Transactions de Dépenses
+          </h2>
+        </div>
+        <p className="text-dark-text-secondary text-base">Historique des sorties d'argent</p>
+      </div>
+
+      <div className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 p-4 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30">
+        <div className="flex flex-col md:flex-row gap-4 items-center">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Rechercher par auteur, cause ou description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-xl backdrop-blur-sm bg-white/50 dark:bg-gray-700/50 border border-white/30 dark:border-gray-600/30 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all duration-300"
+            />
+          </div>
+          <div className="flex items-center gap-4 text-sm">
+            <div className="flex items-center gap-1">
+              <ArrowDown className="w-4 h-4 text-red-500" />
+              <span className="font-medium">{filteredDepenses.length} dépense{filteredDepenses.length > 1 ? 's' : ''}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+        </div>
+      ) : filteredDepenses.length === 0 ? (
+        <div className="text-center py-12">
+          <AlertCircle className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-400 mb-2">Aucune dépense trouvée</h3>
+        </div>
+      ) : (
+      <>
+        {/* Vue Desktop - Tableau */}
+        <div className="hidden lg:block backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gradient-to-r from-red-500/10 to-pink-500/10">
+                <tr>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Date</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Auteur</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cause</th>
+                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Description</th>
+                  <th className="px-6 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Montant</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredDepenses.map((depense, index) => (
+                  <tr key={depense.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-200 border-b border-gray-100/50 dark:border-gray-700/50">
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{depense.date}</td>
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{depense.auteur}</td>
+                    <td className="px-6 py-4 text-gray-900 dark:text-white">{depense.cause}</td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{depense.description || '-'}</td>
+                    <td className="px-6 py-4 text-right font-bold text-red-600 dark:text-red-400">
+                      -{formate(depense.montant)} GNF
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Vue Mobile - Cards */}
+        <div className="lg:hidden space-y-4">
+          {filteredDepenses.map((depense, index) => (
+            <div key={depense.id} className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4 hover:shadow-2xl transition-all duration-300">
+              {/* En-tête de la card */}
+              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-red-400 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                    <ArrowDown className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                      {depense.auteur}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {depense.date}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-red-600 dark:text-red-400">
+                    -{formate(depense.montant)} GNF
+                  </div>
+                </div>
+              </div>
+
+              {/* Détails */}
+              <div className="space-y-3">
+                <div>
+                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Cause:</span>
+                  <p className="text-gray-900 dark:text-white font-medium">{depense.cause}</p>
+                </div>
+                {depense.description && (
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Description:</span>
+                    <p className="text-gray-600 dark:text-gray-300 text-sm">{depense.description}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+// ==========================================================
+// Composant 5 : TransactionsTable (Tableau des transactions)
 // ==========================================================
 function TransactionsTable() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [loading, setLoading] = useState(false);
+
+  // Calculer les tranches actives (qui ont au moins un paiement)
+  const activeTranches = [];
+  for (let i = 1; i <= 9; i++) {
+    const hasPayment = data.some(eleve => eleve[`tranche${i}`] > 0);
+    if (hasPayment) {
+      activeTranches.push(i);
+    }
+  }
 
   // Filtrer les données selon la recherche et le statut
   const filteredData = data.filter(eleve => {
@@ -245,39 +381,39 @@ function TransactionsTable() {
       </div>
 
       {/* Barre de recherche et filtres */}
-      <div className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 p-4 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30">
-        <div className="flex flex-col md:flex-row gap-4 items-center">
+      <div className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 p-3 sm:p-4 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-center">
           {/* Recherche */}
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div className="flex-1 w-full sm:w-auto relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Rechercher par nom ou numéro..."
+              placeholder="Rechercher..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 rounded-xl backdrop-blur-sm bg-white/50 dark:bg-gray-700/50 border border-white/30 dark:border-gray-600/30 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+              className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-3 text-sm sm:text-base rounded-xl backdrop-blur-sm bg-white/50 dark:bg-gray-700/50 border border-white/30 dark:border-gray-600/30 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
             />
           </div>
 
           {/* Filtre par statut */}
-          <div className="flex items-center gap-2">
-            <Filter className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Filter className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
             <select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              className="p-3 rounded-xl backdrop-blur-sm bg-white/50 dark:bg-gray-700/50 border border-white/30 dark:border-gray-600/30 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
+              className="flex-1 sm:flex-none p-2 sm:p-3 text-sm sm:text-base rounded-xl backdrop-blur-sm bg-white/50 dark:bg-gray-700/50 border border-white/30 dark:border-gray-600/30 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all duration-300"
             >
-              <option value="all">Toutes les transactions</option>
-              <option value="paid">Paiements reçus</option>
+              <option value="all">Toutes</option>
+              <option value="paid">Payés</option>
               <option value="unpaid">En attente</option>
             </select>
           </div>
 
           {/* Statistiques rapides */}
-          <div className="flex items-center gap-4 text-sm">
+          <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm">
             <div className="flex items-center gap-1">
-              <ReceiptText className="w-4 h-4 text-blue-500" />
-              <span className="font-medium">{filteredData.length} transactions</span>
+              <ReceiptText className="w-3 h-3 sm:w-4 sm:h-4 text-blue-500" />
+              <span className="font-medium">{filteredData.length}</span>
             </div>
           </div>
         </div>
@@ -299,93 +435,95 @@ function TransactionsTable() {
       ) : (
       <>
         {/* Vue Desktop - Tableau */}
-        <div className="hidden lg:block backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+        <div className="hidden lg:block backdrop-blur-md bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 rounded-3xl shadow-2xl border border-white/30 dark:border-gray-700/30 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm table-fixed">
+            <table className="w-full text-xs sm:text-sm" style={{minWidth: '700px'}}>
               <colgroup>
-                <col className="w-20" />
-                <col className="w-28" />
-                <col className="w-40" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-32" />
-                <col className="w-36" />
+                <col style={{width: '60px'}} />
+                <col style={{width: '100px'}} />
+                <col style={{minWidth: '150px'}} />
+                {activeTranches.map(() => <col key={Math.random()} style={{width: '50px'}} />)}
+                <col style={{width: '120px'}} />
               </colgroup>
-              <thead className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 dark:from-blue-900/30 dark:to-indigo-900/30">
+              <thead className="bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 dark:from-blue-800/40 dark:via-indigo-800/40 dark:to-purple-800/40">
                 <tr>
-                  <th className="px-3 py-4 text-left font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-600/50">
-                    <span>N°</span>
-                  </th>
-                  <th className="px-3 py-4 text-left font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-600/50">
+                  <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                      <span>N°</span>
+                    </div>
+                  </th>
+                  <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-4 h-4 text-blue-600" />
                       <span>Date</span>
                     </div>
                   </th>
-                  <th className="px-3 py-4 text-left font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-600/50">Nom & Prénom</th>
-                  <th className="px-3 py-4 text-right font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-600/50">
-                    <span>Tranche 1</span>
+                  <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-blue-600" />
+                      <span>Nom & Prénom</span>
+                    </div>
                   </th>
-                  <th className="px-3 py-4 text-right font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-600/50">
-                    <span>Tranche 2</span>
-                  </th>
-                  <th className="px-3 py-4 text-right font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-600/50">
-                    <span>Tranche 3</span>
-                  </th>
-                  <th className="px-3 py-4 text-right font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-600/50">
-                    <span>Tranche 4</span>
-                  </th>
-                  <th className="px-3 py-4 text-right font-semibold text-gray-700 dark:text-gray-300 border-b border-gray-200/50 dark:border-gray-600/50">
-                    <div className="flex items-center justify-end gap-1">
-                      <DollarSign className="w-4 h-4" />
-                      <span>Total Payé</span>
+                  {activeTranches.map(num => (
+                    <th key={num} className="px-3 py-5 text-center font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">{num}</div>
+                        <span className="text-xs">T{num}</span>
+                      </div>
+                    </th>
+                  ))}
+                  <th className="px-4 py-5 text-right font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                    <div className="flex items-center justify-end gap-2">
+                      <DollarSign className="w-4 h-4 text-green-600" />
+                      <span>Total</span>
                     </div>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredData.map((eleve, index) => {
-                  const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4;
+                  const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4 + eleve.tranche5 + eleve.tranche6 + eleve.tranche7 + eleve.tranche8 + eleve.tranche9;
                   
                   return (
-                    <tr key={index} className="hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-200 border-b border-gray-100/50 dark:border-gray-700/50">
-                      <td className="px-3 py-4 text-left font-medium text-gray-900 dark:text-white">{eleve.Numero}</td>
-                      <td className="px-3 py-4 text-left text-gray-600 dark:text-gray-400">{eleve.date}</td>
-                      <td className="px-3 py-4 text-left">
-                        <div className="font-medium text-gray-900 dark:text-white truncate">{eleve["Nom Complet"]}</div>
-                      </td>
-                      <td className={`px-3 py-4 text-right font-semibold ${
-                        eleve.tranche1 > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        <div className="whitespace-nowrap">
-                          {eleve.tranche1 > 0 ? `${formate(eleve.tranche1)} GNF` : '-'}
+                    <tr key={index} className="group hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-300 border-b border-gray-200/30 dark:border-gray-700/30 hover:shadow-lg">
+                      <td className="px-4 py-5 text-left">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+                            {eleve.Numero}
+                          </div>
                         </div>
                       </td>
-                      <td className={`px-3 py-4 text-right font-semibold ${
-                        eleve.tranche2 > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        <div className="whitespace-nowrap">
-                          {eleve.tranche2 > 0 ? `${formate(eleve.tranche2)} GNF` : '-'}
+                      <td className="px-4 py-5 text-left">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                          <span className="text-gray-700 dark:text-gray-300 font-medium">{eleve.date}</span>
                         </div>
                       </td>
-                      <td className={`px-3 py-4 text-right font-semibold ${
-                        eleve.tranche3 > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        <div className="whitespace-nowrap">
-                          {eleve.tranche3 > 0 ? `${formate(eleve.tranche3)} GNF` : '-'}
+                      <td className="px-4 py-5 text-left">
+                        <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                          {eleve["Nom Complet"]}
                         </div>
                       </td>
-                      <td className={`px-3 py-4 text-right font-semibold ${
-                        eleve.tranche4 > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        <div className="whitespace-nowrap">
-                          {eleve.tranche4 > 0 ? `${formate(eleve.tranche4)} GNF` : '-'}
-                        </div>
-                      </td>
-                      <td className="px-3 py-4 text-right font-bold text-lg text-blue-600 dark:text-blue-400">
-                        <div className="whitespace-nowrap">
-                          {formate(totalPaye)} GNF
+                      {activeTranches.map(num => {
+                        const tranche = eleve[`tranche${num}`];
+                        return (
+                          <td key={num} className="px-3 py-5 text-center">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200 ${
+                              tranche > 0 
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' 
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                            }`}>
+                              {tranche > 0 ? '✓' : '×'}
+                            </div>
+                          </td>
+                        );
+                      })}
+                      <td className="px-4 py-5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="px-4 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-sm shadow-lg">
+                            {formate(totalPaye)} GNF
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -396,14 +534,13 @@ function TransactionsTable() {
           </div>
         </div>
 
-        {/* Vue Mobile - Cards */}
-        <div className="lg:hidden space-y-4">
+        {/* Vue Mobile/Tablette - Cards */}
+        <div className="lg:hidden space-y-3 sm:space-y-4 px-2 sm:px-0">
           {filteredData.map((eleve, index) => {
-            const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4;
+            const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4 + eleve.tranche5 + eleve.tranche6 + eleve.tranche7 + eleve.tranche8 + eleve.tranche9;
             
             return (
-              <div key={index} className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4 hover:shadow-2xl transition-all duration-300">
-                {/* En-tête de la card */}
+              <div key={index} className="mx-auto max-w-md sm:max-w-none backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4">
                 <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
@@ -420,46 +557,25 @@ function TransactionsTable() {
                   </div>
                 </div>
 
-                {/* Détail des tranches */}
                 <div className="space-y-2 mb-4">
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Détail des paiements</h4>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
-                      <span className="text-gray-600 dark:text-gray-400">Tranche 1</span>
-                      <span className={`font-semibold ${
-                        eleve.tranche1 > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {eleve.tranche1 > 0 ? `${formate(eleve.tranche1)} GNF` : '-'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
-                      <span className="text-gray-600 dark:text-gray-400">Tranche 2</span>
-                      <span className={`font-semibold ${
-                        eleve.tranche2 > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {eleve.tranche2 > 0 ? `${formate(eleve.tranche2)} GNF` : '-'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
-                      <span className="text-gray-600 dark:text-gray-400">Tranche 3</span>
-                      <span className={`font-semibold ${
-                        eleve.tranche3 > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {eleve.tranche3 > 0 ? `${formate(eleve.tranche3)} GNF` : '-'}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center p-2 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
-                      <span className="text-gray-600 dark:text-gray-400">Tranche 4</span>
-                      <span className={`font-semibold ${
-                        eleve.tranche4 > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                      }`}>
-                        {eleve.tranche4 > 0 ? `${formate(eleve.tranche4)} GNF` : '-'}
-                      </span>
-                    </div>
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    {activeTranches.map(num => {
+                      const tranche = eleve[`tranche${num}`];
+                      return (
+                        <div key={num} className="flex justify-between items-center p-2 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
+                          <span className="text-gray-600 dark:text-gray-400">T{num}</span>
+                          <span className={`font-semibold ${
+                            tranche > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                          }`}>
+                            {tranche > 0 ? `${formate(tranche)} GNF` : '-'}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Montant total */}
                 <div className="text-center p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/20">
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -496,16 +612,16 @@ function DashboardView() {
       </div>
       
       {/* Stats Cards - Vue responsive */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 px-2 sm:px-0">
         {STATS_DATA.map((stat, index) => (
           <StatCard key={index} {...stat} Icon={stat.icon} />
         ))}
       </div>
       
       {/* Actions rapides - Mobile Card View */}
-      <div className="card-modern p-6">
-        <h3 className="text-dark-text text-lg font-semibold mb-4">Actions rapides</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="card-modern p-4 sm:p-6">
+        <h3 className="text-dark-text text-base sm:text-lg font-semibold mb-3 sm:mb-4">Actions rapides</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
           <button className="btn-primary p-3 text-sm rounded-xl flex flex-col items-center gap-2 hover:scale-105 transition-transform">
             <Wallet className="w-5 h-5" />
             <span>Ajouter</span>
@@ -628,14 +744,17 @@ export default function App() {
                 </button>
             </header>
 
-            <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-                <div className="container-custom max-w-7xl">
+            <main className="flex-1 p-3 sm:p-4 md:p-6 lg:p-8 overflow-y-auto">
+                <div className="container-custom max-w-7xl mx-auto">
                     <DashboardView />
-                    <div className="mt-8">
+                    <div className="mt-6 sm:mt-8">
                         <Charts />
                     </div>
-                    <div className="mt-8">
+                    <div className="mt-6 sm:mt-8">
                         <TransactionsTable />
+                    </div>
+                    <div className="mt-6 sm:mt-8">
+                        <DepensesTable />
                     </div>
                 </div>
             </main>
