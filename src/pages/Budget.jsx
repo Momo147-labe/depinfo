@@ -303,7 +303,7 @@ function AutreRevenueTable() {
         <div className="lg:hidden space-y-3 sm:space-y-4 px-2 sm:px-0">
           {filteredRevenus.map((revenu, index) => (
             <div key={revenu.id} className="mx-auto max-w-md sm:max-w-none backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4 hover:shadow-2xl transition-all duration-300">
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
+              <div className="flex items-center flex-col justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
                     <ArrowUp className="w-6 h-6" />
@@ -440,8 +440,8 @@ function DepensesTable() {
           {filteredDepenses.map((depense, index) => (
             <div key={depense.id} className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4 hover:shadow-2xl transition-all duration-300">
               {/* En-tête de la card */}
-              <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
-                <div className="flex items-center gap-3">
+              <div className="flex items-center flex-col mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
+                <div className="flex flex-row items-center justify-between gap-3">
                   <div className="w-12 h-12 rounded-full bg-gradient-to-r from-red-400 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
                     <ArrowDown className="w-6 h-6" />
                   </div>
@@ -920,14 +920,14 @@ export default function App() {
       
       <div className="flex min-h-screen font-inter relative z-10">
         <div className="flex-1 flex flex-col">
-            <header className='lg:hidden flex justify-between items-center w-full p-4 glass-nav sticky top-0 z-20 border-b border-primary-800/50'>
+            {/* <header className='lg:hidden flex justify-between items-center w-full p-4 glass-nav sticky top-0 z-20 border-b border-primary-800/50'>
                 <h1 className="text-dark-text text-xl font-semibold">
                     {NAV_LINKS.find(link => link.key === currentPage)?.label || 'Budget Classe'}
                 </h1>
                 <button className='text-dark-text-secondary hover:text-primary' onClick={() => setIsMobileMenuOpen(true)}>
                     <Menu className='w-6 h-6'/>
                 </button>
-            </header>
+            </header> */}
 
             <main className="flex-1 justify-between items-center px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
                 <div className="max-w-7xl mx-auto">
