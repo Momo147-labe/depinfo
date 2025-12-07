@@ -1,5 +1,19 @@
 [
-    {"id":1,"cause":"Retrait D'argent","description":"les chefs nous a demande de faire de retrait pour montrer l'argent lors de la dernier reunion frai de retrait de 10 000 GNF","montant":10000,"date":"2025-01-01","auteur":"Lamine Fadiga"},
-    {"id":1,"cause":"Dépôt d'argent","description":"il a fait depot sur mon compte marchand avec un montant 50 000 frait de depot est 500 GNF","montant":500,"date":"2025-12-7","auteur":"Adama Keita"}
+    {
+        "id":1,
+        "cause":"Retrait D'argent",
+        "description":"les chefs nous a demande de faire de retrait pour montrer l'argent lors de la dernier reunion frai de retrait de 10 000 GNF",
+        "montant":10000,
+        "date":"2025-01-01",
+        "auteur":"Lamine Fadiga"
+     },
+    {
+        "id":1,
+        "cause":"Dépôt d'argent",
+        "description":"il a fait depot sur mon compte marchand avec un montant 50 000 frait de depot est 500 GNF",
+        "montant":500,
+        "date":"2025-12-7",
+        "auteur":"Adama Keita"
+}
 
 ]
