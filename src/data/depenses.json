@@ -7,13 +7,12 @@
         "date":"2025-01-01",
         "auteur":"Lamine Fadiga"
      },
-    {
-        "id":1,
-        "cause":"Dépôt d'argent",
-        "description":"il a fait depot sur mon compte marchand avec un montant 50 000 frait de depot est 500 GNF",
-        "montant":500,
-        "date":"2025-12-7",
-        "auteur":"Adama Keita"
-}
-
+     {
+        "id":2,
+        "cause":"Achat des cadenas",
+        "description":"les chefs nous a demande d'acheter deux cadenas pour le batiment Moscou pour la avoir deux salle de classe",
+        "montant":30000,
+        "date":"2025-12-12",
+        "auteur":"Fode Momo Soumah"
+     }
 ]
