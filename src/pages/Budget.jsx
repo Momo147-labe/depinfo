@@ -43,6 +43,11 @@ const totalDepenses = depenses.reduce((total, depense) => total + depense.montan
 const revenus = somme + totalAutreRevenue
 const soldeActuel = revenus - totalDepenses
 const tail=info.length
+console.log(somme)
+console.log(totalAutreRevenue)
+console.log(totalDepenses)
+console.log(revenus)
+console.log(soldeActuel)
 
 const NAV_LINKS = [
   { key: 'dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
@@ -52,9 +57,9 @@ const NAV_LINKS = [
 ];
 
 const STATS_DATA = [
-  { title: 'Solde Actuel', value: `${formate(soldeActuel)} GNF`, change: `${soldeActuel >= 0 ? '+' : ''}${((soldeActuel/revenus)*100).toFixed(1)}%`, color: soldeActuel >= 0 ? 'text-green-400' : 'text-red-400', icon: Wallet },
+  { title: 'Solde Actuel', value: `${formate(soldeActuel)} GNF`, change: `${soldeActuel >= 0 ? '+' : ''}${revenus > 0 ? ((soldeActuel/revenus)*100).toFixed(1) : '0'}%`, color: soldeActuel >= 0 ? 'text-green-400' : 'text-red-400', icon: Wallet },
   { title: 'Revenus totaux', value: `${formate(revenus)} GNF`, change: `${data.length + autrerevenue.length} sources`, color: 'text-green-400', icon: ArrowUp },
-  { title: 'Dépenses totales', value: `${formate(totalDepenses)} GNF`, change: `${depenses.length} transactions`, color: 'text-red-400', icon: ArrowDown },
+  { title: 'Dépenses totales', value: `${formate(totalDepenses)} GNF`, change: `${revenus > 0 ? ((totalDepenses/revenus)*100).toFixed(1) : '0'}% du revenu`, color: 'text-red-400', icon: ArrowDown },
   { title: 'Autres revenus', value: `${formate(totalAutreRevenue)} GNF`, change: `${autrerevenue.length} sources`, color: 'text-purple-400', icon: ReceiptText },
 ];
 
@@ -156,7 +161,7 @@ function Charts() {
           
           <div className="space-y-4">
             {trancheData.map((tranche, index) => {
-              const percentage = ((tranche.total / somme) * 100).toFixed(1);
+              const percentage = somme > 0 ? ((tranche.total / somme) * 100).toFixed(1) : 0;
               return (
                 <div key={index} className="space-y-2">
                   <div className="flex justify-between items-center">
@@ -189,7 +194,7 @@ function Charts() {
           
           <div className="space-y-4">
             {trancheData.map((tranche, index) => {
-              const moyenne = Math.round(tranche.total / data.length);
+              const moyenne = data.length > 0 ? Math.round(tranche.total / data.length) : 0;
               return (
                 <div key={index} className="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
                   <div className="flex items-center gap-2">
