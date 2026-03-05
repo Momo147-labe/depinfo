@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import data from "../data/paiements.json"
 import info from "../data/information.json"
 import depenses from "../data/depenses.json"
@@ -17,16 +17,18 @@ import {
   PieChart,
   Calendar
 } from 'lucide-react';
-import { 
-  Search, 
-  Filter, 
-  Eye, 
-  Download, 
-  Users, 
-  DollarSign, 
+import {
+  Search,
+  Filter,
+  Eye,
+  Download,
+  Users,
+  DollarSign,
   Loader2,
   AlertCircle
 } from 'lucide-react';
+import html2canvas from 'html2canvas-pro';
+import jsPDF from 'jspdf';
 
 // --- Définitions des couleurs personnalisées et du thème Dark Mode ---
 const COLORS = {
@@ -42,7 +44,7 @@ const totalAutreRevenue = autrerevenue.reduce((total, revenu) => total + revenu.
 const totalDepenses = depenses.reduce((total, depense) => total + depense.montant, 0)
 const revenus = somme + totalAutreRevenue
 const soldeActuel = revenus - totalDepenses
-const tail=info.length
+const tail = info.length
 console.log(somme)
 console.log(totalAutreRevenue)
 console.log(totalDepenses)
@@ -57,13 +59,13 @@ const NAV_LINKS = [
 ];
 
 const STATS_DATA = [
-  { title: 'Solde Actuel', value: `${formate(soldeActuel)} GNF`, change: `${soldeActuel >= 0 ? '+' : ''}${revenus > 0 ? ((soldeActuel/revenus)*100).toFixed(1) : '0'}%`, color: soldeActuel >= 0 ? 'text-green-400' : 'text-red-400', icon: Wallet },
+  { title: 'Solde Actuel', value: `${formate(soldeActuel)} GNF`, change: `${soldeActuel >= 0 ? '+' : ''}${revenus > 0 ? ((soldeActuel / revenus) * 100).toFixed(1) : '0'}%`, color: soldeActuel >= 0 ? 'text-green-400' : 'text-red-400', icon: Wallet },
   { title: 'Revenus totaux', value: `${formate(revenus)} GNF`, change: `${data.length + autrerevenue.length} sources`, color: 'text-green-400', icon: ArrowUp },
-  { title: 'Dépenses totales', value: `${formate(totalDepenses)} GNF`, change: `${revenus > 0 ? ((totalDepenses/revenus)*100).toFixed(1) : '0'}% du revenu`, color: 'text-red-400', icon: ArrowDown },
+  { title: 'Dépenses totales', value: `${formate(totalDepenses)} GNF`, change: `${revenus > 0 ? ((totalDepenses / revenus) * 100).toFixed(1) : '0'}% du revenu`, color: 'text-red-400', icon: ArrowDown },
   { title: 'Autres revenus', value: `${formate(totalAutreRevenue)} GNF`, change: `${autrerevenue.length} sources`, color: 'text-purple-400', icon: ReceiptText },
 ];
 
-function formate(n){
+function formate(n) {
   return Number(n).toLocaleString("fr-FR")
 }
 
@@ -91,8 +93,8 @@ function StatCard({ title, value, change, color, Icon }) {
       <div className="space-y-3">
         <p className="text-white text-2xl sm:text-3xl font-bold">{value}</p>
         <div className={`${color} text-sm font-medium flex items-center gap-2`}>
-          {change.includes('+') ? 
-            <ArrowUp className="w-4 h-4" /> : 
+          {change.includes('+') ?
+            <ArrowUp className="w-4 h-4" /> :
             <ArrowDown className="w-4 h-4" />
           }
           <span>{change}</span>
@@ -158,7 +160,7 @@ function Charts() {
             <PieChart className="w-6 h-6 text-green-400" />
             <h3 className="text-xl font-semibold text-white">Répartition par Tranche</h3>
           </div>
-          
+
           <div className="space-y-4">
             {trancheData.map((tranche, index) => {
               const percentage = somme > 0 ? ((tranche.total / somme) * 100).toFixed(1) : 0;
@@ -174,9 +176,9 @@ function Charts() {
                     </span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
+                    <div
                       className={`bg-gradient-to-r ${tranche.gradient} h-2 rounded-full transition-all duration-1000`}
-                      style={{width: `${percentage}%`}}
+                      style={{ width: `${percentage}%` }}
                     />
                   </div>
                 </div>
@@ -191,7 +193,7 @@ function Charts() {
             <TrendingUp className="w-6 h-6 text-purple-400" />
             <h3 className="text-lg font-semibold text-white">Moyennes par Tranche</h3>
           </div>
-          
+
           <div className="space-y-4">
             {trancheData.map((tranche, index) => {
               const moyenne = data.length > 0 ? Math.round(tranche.total / data.length) : 0;
@@ -222,7 +224,7 @@ function AutreRevenueTable() {
   const [loading, setLoading] = useState(false);
 
   const filteredRevenus = autrerevenue.filter(revenu => {
-    return searchTerm === '' || 
+    return searchTerm === '' ||
       revenu.auteur?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       revenu.source?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       revenu.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -273,78 +275,78 @@ function AutreRevenueTable() {
           <h3 className="text-xl font-semibold text-gray-400 mb-2">Aucun revenu trouvé</h3>
         </div>
       ) : (
-      <>
-        {/* Vue Desktop - Tableau */}
-        <div className="hidden lg:block backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10">
-                <tr>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Date</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Auteur</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Source</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Description</th>
-                  <th className="px-6 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Montant</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRevenus.map((revenu, index) => (
-                  <tr key={revenu.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-200 border-b border-gray-100/50 dark:border-gray-700/50">
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{revenu.date}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{revenu.auteur}</td>
-                    <td className="px-6 py-4 text-gray-900 dark:text-white">{revenu.source}</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{revenu.description || '-'}</td>
-                    <td className="px-6 py-4 text-right font-bold text-green-600 dark:text-green-400">
-                      +{formate(revenu.montant)} GNF
-                    </td>
+        <>
+          {/* Vue Desktop - Tableau */}
+          <div className="hidden lg:block backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gradient-to-r from-purple-500/10 to-indigo-500/10">
+                  <tr>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Date</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Auteur</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Source</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Description</th>
+                    <th className="px-6 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Montant</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Vue Mobile - Cards */}
-        <div className="lg:hidden space-y-3 sm:space-y-4 px-2 sm:px-0">
-          {filteredRevenus.map((revenu, index) => (
-            <div key={revenu.id} className="mx-auto max-w-md sm:max-w-none backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4 hover:shadow-2xl transition-all duration-300">
-              <div className="flex items-center flex-col justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
-                    <ArrowUp className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                      {revenu.auteur}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {revenu.date}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xl font-bold text-green-600 dark:text-green-400">
-                    +{formate(revenu.montant)} GNF
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Source:</span>
-                  <p className="text-gray-900 dark:text-white font-medium">{revenu.source}</p>
-                </div>
-                {revenu.description && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Description:</span>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">{revenu.description}</p>
-                  </div>
-                )}
-              </div>
+                </thead>
+                <tbody>
+                  {filteredRevenus.map((revenu, index) => (
+                    <tr key={revenu.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-200 border-b border-gray-100/50 dark:border-gray-700/50">
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{revenu.date}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{revenu.auteur}</td>
+                      <td className="px-6 py-4 text-gray-900 dark:text-white">{revenu.source}</td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{revenu.description || '-'}</td>
+                      <td className="px-6 py-4 text-right font-bold text-green-600 dark:text-green-400">
+                        +{formate(revenu.montant)} GNF
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
-      </>
+          </div>
+
+          {/* Vue Mobile - Cards */}
+          <div className="lg:hidden space-y-3 sm:space-y-4 px-2 sm:px-0">
+            {filteredRevenus.map((revenu, index) => (
+              <div key={revenu.id} className="mx-auto max-w-md sm:max-w-none backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4 hover:shadow-2xl transition-all duration-300">
+                <div className="flex items-center flex-col justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
+                      <ArrowUp className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                        {revenu.auteur}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {revenu.date}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                      +{formate(revenu.montant)} GNF
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Source:</span>
+                    <p className="text-gray-900 dark:text-white font-medium">{revenu.source}</p>
+                  </div>
+                  {revenu.description && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Description:</span>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">{revenu.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
@@ -358,7 +360,7 @@ function DepensesTable() {
   const [loading, setLoading] = useState(false);
 
   const filteredDepenses = depenses.filter(depense => {
-    return searchTerm === '' || 
+    return searchTerm === '' ||
       depense.auteur?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       depense.cause?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       depense.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -409,80 +411,80 @@ function DepensesTable() {
           <h3 className="text-xl font-semibold text-gray-400 mb-2">Aucune dépense trouvée</h3>
         </div>
       ) : (
-      <>
-        {/* Vue Desktop - Tableau */}
-        <div className="hidden lg:block backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead className="bg-gradient-to-r from-red-500/10 to-pink-500/10">
-                <tr>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Date</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Auteur</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cause</th>
-                  <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Description</th>
-                  <th className="px-6 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Montant</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredDepenses.map((depense, index) => (
-                  <tr key={depense.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-200 border-b border-gray-100/50 dark:border-gray-700/50">
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{depense.date}</td>
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{depense.auteur}</td>
-                    <td className="px-6 py-4 text-gray-900 dark:text-white">{depense.cause}</td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{depense.description || '-'}</td>
-                    <td className="px-6 py-4 text-right font-bold text-red-600 dark:text-red-400">
-                      -{formate(depense.montant)} GNF
-                    </td>
+        <>
+          {/* Vue Desktop - Tableau */}
+          <div className="hidden lg:block backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gradient-to-r from-red-500/10 to-pink-500/10">
+                  <tr>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Date</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Auteur</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Cause</th>
+                    <th className="px-6 py-4 text-left font-semibold text-gray-700 dark:text-gray-300">Description</th>
+                    <th className="px-6 py-4 text-right font-semibold text-gray-700 dark:text-gray-300">Montant</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Vue Mobile - Cards */}
-        <div className="lg:hidden space-y-4">
-          {filteredDepenses.map((depense, index) => (
-            <div key={depense.id} className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4 hover:shadow-2xl transition-all duration-300">
-              {/* En-tête de la card */}
-              <div className="flex items-center flex-col mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
-                <div className="flex flex-row items-center justify-between gap-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-r from-red-400 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
-                    <ArrowDown className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                      {depense.auteur}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {depense.date}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xl font-bold text-red-600 dark:text-red-400">
-                    -{formate(depense.montant)} GNF
-                  </div>
-                </div>
-              </div>
-
-              {/* Détails */}
-              <div className="space-y-3">
-                <div>
-                  <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Cause:</span>
-                  <p className="text-gray-900 dark:text-white font-medium">{depense.cause}</p>
-                </div>
-                {depense.description && (
-                  <div>
-                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Description:</span>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm">{depense.description}</p>
-                  </div>
-                )}
-              </div>
+                </thead>
+                <tbody>
+                  {filteredDepenses.map((depense, index) => (
+                    <tr key={depense.id} className="hover:bg-white/50 dark:hover:bg-gray-700/50 transition-all duration-200 border-b border-gray-100/50 dark:border-gray-700/50">
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{depense.date}</td>
+                      <td className="px-6 py-4 font-medium text-gray-900 dark:text-white">{depense.auteur}</td>
+                      <td className="px-6 py-4 text-gray-900 dark:text-white">{depense.cause}</td>
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-400">{depense.description || '-'}</td>
+                      <td className="px-6 py-4 text-right font-bold text-red-600 dark:text-red-400">
+                        -{formate(depense.montant)} GNF
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
-      </>
+          </div>
+
+          {/* Vue Mobile - Cards */}
+          <div className="lg:hidden space-y-4">
+            {filteredDepenses.map((depense, index) => (
+              <div key={depense.id} className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-4 hover:shadow-2xl transition-all duration-300">
+                {/* En-tête de la card */}
+                <div className="flex items-center flex-col mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
+                  <div className="flex flex-row items-center justify-between gap-3">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-red-400 to-pink-500 flex items-center justify-center text-white font-bold text-lg">
+                      <ArrowDown className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg text-gray-900 dark:text-white">
+                        {depense.auteur}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {depense.date}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xl font-bold text-red-600 dark:text-red-400">
+                      -{formate(depense.montant)} GNF
+                    </div>
+                  </div>
+                </div>
+
+                {/* Détails */}
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Cause:</span>
+                    <p className="text-gray-900 dark:text-white font-medium">{depense.cause}</p>
+                  </div>
+                  {depense.description && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Description:</span>
+                      <p className="text-gray-600 dark:text-gray-300 text-sm">{depense.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
@@ -507,12 +509,12 @@ function TransactionsTable() {
 
   // Filtrer les données selon la recherche et le statut
   const filteredData = data.filter(eleve => {
-    const matchSearch = searchTerm === '' || 
+    const matchSearch = searchTerm === '' ||
       eleve["Nom Complet"]?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       eleve.Numero?.toString().includes(searchTerm);
-    
+
     const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4;
-    
+
     if (filterStatus === 'all') return matchSearch;
     if (filterStatus === 'paid') return matchSearch && totalPaye === 100000;
     if (filterStatus === 'unpaid') return matchSearch && totalPaye < 100000;
@@ -580,165 +582,163 @@ function TransactionsTable() {
           <p className="text-gray-500 dark:text-gray-500">Aucune transaction ne correspond à vos critères de recherche.</p>
         </div>
       ) : (
-      <>
-        {/* Vue Desktop */}
-        <div className="hidden lg:block backdrop-blur-md bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 rounded-3xl shadow-2xl border border-white/30 dark:border-gray-700/30 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm" style={{minWidth: '700px'}}>
-              <colgroup>
-                <col style={{width: '60px'}} />
-                <col style={{width: '100px'}} />
-                <col style={{minWidth: '150px'}} />
-                {activeTranches.map(() => <col key={Math.random()} style={{width: '50px'}} />)}
-                <col style={{width: '120px'}} />
-              </colgroup>
-              <thead className="bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 dark:from-blue-800/40 dark:via-indigo-800/40 dark:to-purple-800/40">
-                <tr>
-                  <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                      <span>N°</span>
-                    </div>
-                  </th>
-                  <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-blue-600" />
-                      <span>Date</span>
-                    </div>
-                  </th>
-                  <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4 text-blue-600" />
-                      <span>Nom & Prénom</span>
-                    </div>
-                  </th>
-                  {activeTranches.map(num => (
-                    <th key={num} className="px-3 py-5 text-center font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
-                      <div className="flex flex-col items-center gap-1">
-                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">{num}</div>
-                        <span className="text-xs">T{num}</span>
+        <>
+          {/* Vue Desktop */}
+          <div className="hidden lg:block backdrop-blur-md bg-gradient-to-br from-white/80 to-gray-50/80 dark:from-gray-800/80 dark:to-gray-900/80 rounded-3xl shadow-2xl border border-white/30 dark:border-gray-700/30 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm" style={{ minWidth: '700px' }}>
+                <colgroup>
+                  <col style={{ width: '60px' }} />
+                  <col style={{ width: '100px' }} />
+                  <col style={{ minWidth: '150px' }} />
+                  {activeTranches.map(() => <col key={Math.random()} style={{ width: '50px' }} />)}
+                  <col style={{ width: '120px' }} />
+                </colgroup>
+                <thead className="bg-gradient-to-r from-blue-600/20 via-indigo-600/20 to-purple-600/20 dark:from-blue-800/40 dark:via-indigo-800/40 dark:to-purple-800/40">
+                  <tr>
+                    <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                        <span>N°</span>
                       </div>
                     </th>
-                  ))}
-                  <th className="px-4 py-5 text-right font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
-                    <div className="flex items-center justify-end gap-2">
-                      <DollarSign className="w-4 h-4 text-green-600" />
-                      <span>Total</span>
-                    </div>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredData.map((eleve, index) => {
-                  const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4 + eleve.tranche5 + eleve.tranche6 + eleve.tranche7 + eleve.tranche8 + eleve.tranche9;
-                  
-                  return (
-                    <tr key={index} className="group hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-300 border-b border-gray-200/30 dark:border-gray-700/30 hover:shadow-lg">
-                      <td className="px-4 py-5 text-left">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
-                            {eleve.Numero}
+                    <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-blue-600" />
+                        <span>Date</span>
+                      </div>
+                    </th>
+                    <th className="px-4 py-5 text-left font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-blue-600" />
+                        <span>Nom & Prénom</span>
+                      </div>
+                    </th>
+                    {activeTranches.map(num => (
+                      <th key={num} className="px-3 py-5 text-center font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                        <div className="flex flex-col items-center gap-1">
+                          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white text-xs font-bold">{num}</div>
+                          <span className="text-xs">T{num}</span>
+                        </div>
+                      </th>
+                    ))}
+                    <th className="px-4 py-5 text-right font-bold text-gray-800 dark:text-gray-200 border-b-2 border-blue-200/50 dark:border-blue-700/50">
+                      <div className="flex items-center justify-end gap-2">
+                        <DollarSign className="w-4 h-4 text-green-600" />
+                        <span>Total</span>
+                      </div>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredData.map((eleve, index) => {
+                    const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4 + eleve.tranche5 + eleve.tranche6 + eleve.tranche7 + eleve.tranche8 + eleve.tranche9;
+
+                    return (
+                      <tr key={index} className="group hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/50 dark:hover:from-blue-900/20 dark:hover:to-indigo-900/20 transition-all duration-300 border-b border-gray-200/30 dark:border-gray-700/30 hover:shadow-lg">
+                        <td className="px-4 py-5 text-left">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold text-sm">
+                              {eleve.Numero}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-5 text-left">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                          <span className="text-gray-700 dark:text-gray-300 font-medium">{eleve.date}</span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-5 text-left">
-                        <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                        </td>
+                        <td className="px-4 py-5 text-left">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                            <span className="text-gray-700 dark:text-gray-300 font-medium">{eleve.date}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-5 text-left">
+                          <div className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
+                            {eleve["Nom Complet"]}
+                          </div>
+                        </td>
+                        {activeTranches.map(num => {
+                          const tranche = eleve[`tranche${num}`];
+                          return (
+                            <td key={num} className="px-3 py-5 text-center">
+                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200 ${tranche > 0
+                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                                }`}>
+                                {tranche > 0 ? '✓' : '×'}
+                              </div>
+                            </td>
+                          );
+                        })}
+                        <td className="px-4 py-5 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <div className="px-4 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-sm shadow-lg">
+                              {formate(totalPaye)} GNF
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Vue Mobile */}
+          <div className="lg:hidden space-y-4">
+            {filteredData.map((eleve, index) => {
+              const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4 + eleve.tranche5 + eleve.tranche6 + eleve.tranche7 + eleve.tranche8 + eleve.tranche9;
+
+              return (
+                <div key={index} className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6">
+                  <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
+                        {eleve.Numero}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-lg text-gray-900 dark:text-white">
                           {eleve["Nom Complet"]}
-                        </div>
-                      </td>
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {eleve.date}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4 mb-6">
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Détail des paiements</h4>
+                    <div className="grid grid-cols-3 gap-3 text-sm">
                       {activeTranches.map(num => {
                         const tranche = eleve[`tranche${num}`];
                         return (
-                          <td key={num} className="px-3 py-5 text-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200 ${
-                              tranche > 0 
-                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' 
-                                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                            }`}>
+                          <div key={num} className="flex justify-between items-center p-2 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
+                            <span className="text-gray-600 dark:text-gray-400">T{num}</span>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200 ${tranche > 0
+                              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg'
+                              : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                              }`}>
                               {tranche > 0 ? '✓' : '×'}
                             </div>
-                          </td>
+                          </div>
                         );
                       })}
-                      <td className="px-4 py-5 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <div className="px-4 py-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white font-bold text-sm shadow-lg">
-                            {formate(totalPaye)} GNF
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+
+                  <div className="text-center p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/20">
+                    <div className="flex items-center justify-center gap-2 mb-2">
+                      <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Total payé</span>
+                    </div>
+                    <p className="font-bold text-2xl text-blue-700 dark:text-blue-300">
+                      {formate(totalPaye)} GNF
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
-
-        {/* Vue Mobile */}
-        <div className="lg:hidden space-y-4">
-          {filteredData.map((eleve, index) => {
-            const totalPaye = eleve.tranche1 + eleve.tranche2 + eleve.tranche3 + eleve.tranche4 + eleve.tranche5 + eleve.tranche6 + eleve.tranche7 + eleve.tranche8 + eleve.tranche9;
-            
-            return (
-              <div key={index} className="backdrop-blur-md bg-white/70 dark:bg-gray-800/70 rounded-2xl shadow-xl border border-white/20 dark:border-gray-700/30 p-6">
-                <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-200/30 dark:border-gray-600/30">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center text-white font-bold text-lg">
-                      {eleve.Numero}
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-lg text-gray-900 dark:text-white">
-                        {eleve["Nom Complet"]}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {eleve.date}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Détail des paiements</h4>
-                  <div className="grid grid-cols-3 gap-3 text-sm">
-                    {activeTranches.map(num => {
-                      const tranche = eleve[`tranche${num}`];
-                      return (
-                        <div key={num} className="flex justify-between items-center p-2 rounded-lg bg-gray-50/50 dark:bg-gray-700/30">
-                          <span className="text-gray-600 dark:text-gray-400">T{num}</span>
-                                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-200 ${
-                              tranche > 0 
-                                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-lg' 
-                                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                            }`}>
-                              {tranche > 0 ? '✓' : '×'}
-                            </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="text-center p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/20">
-                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <DollarSign className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">Total payé</span>
-                  </div>
-                  <p className="font-bold text-2xl text-blue-700 dark:text-blue-300">
-                    {formate(totalPaye)} GNF
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </>
+        </>
       )}
     </div>
   );
@@ -747,49 +747,36 @@ function TransactionsTable() {
 // ==========================================================
 // Composant 4 : DashboardView (Vue complète du Tableau de bord)
 // ==========================================================
-function DashboardView() {
+function DashboardView({ handleDownloadPdf }) {
   return (
     <div className="space-y-8">
       {/* Header moderne */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 p-8 lg:p-12">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20"></div>
+      <div className="relative overflow-hidden rounded-3xl p-8 lg:p-12" style={{ background: 'linear-gradient(to right, #0f172a, #581c87, #0f172a)' }}>
+        <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(37, 99, 235, 0.2), rgba(147, 51, 234, 0.2), rgba(219, 39, 119, 0.2))' }}></div>
         <div className="relative z-10">
           <h1 className="text-white text-3xl lg:text-5xl font-bold mb-4 text-gradient">Tableau de bord</h1>
           <p className="text-slate-300 text-lg lg:text-xl">Gestion financière intelligente</p>
+          <div className="mt-8 flex flex-wrap gap-4 no-pdf">
+            <button
+              onClick={handleDownloadPdf}
+              className="flex items-center gap-2 px-6 py-3 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-all duration-300 border border-white/20 backdrop-blur-md group"
+            >
+              <Download className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <span className="font-semibold">Exporter en PDF</span>
+            </button>
+          </div>
         </div>
         <div className="absolute -top-10 -right-10 w-40 h-40 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl"></div>
       </div>
-      
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {STATS_DATA.map((stat, index) => (
           <StatCard key={index} {...stat} Icon={stat.icon} />
         ))}
       </div>
-      
-      {/* Actions rapides */}
-      {/* <div className="card-modern p-6">
-        <h3 className="text-white text-lg font-semibold mb-6">Actions rapides</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <button className="btn-primary p-4 flex flex-col items-center gap-3 group">
-            <Wallet className="w-6 h-6 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium">Ajouter</span>
-          </button>
-          <button className="btn-secondary p-4 flex flex-col items-center gap-3 group">
-            <BarChartBig className="w-6 h-6 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium">Rapport</span>
-          </button>
-          <button className="btn-secondary p-4 flex flex-col items-center gap-3 group">
-            <Settings className="w-6 h-6 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium">Réglages</span>
-          </button>
-          <button className="btn-secondary p-4 flex flex-col items-center gap-3 group">
-            <ReceiptText className="w-6 h-6 group-hover:scale-110 transition-transform" />
-            <span className="text-sm font-medium">Historique</span>
-          </button>
-        </div>
-      </div> */}
+
     </div>
   );
 }
@@ -798,8 +785,6 @@ function DashboardView() {
 // Composant Principal : App
 // ==========================================================
 export default function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const customStyles = `
     * {
@@ -913,38 +898,109 @@ export default function App() {
     }
   `;
 
+
+  const cvPreviewRef = useRef(null)
+
+  // const handleDownloadPdf = async () => {
+  //   const element = cvPreviewRef.current;
+  //   if (element) {
+  //     try {
+
+  //       const canvas = await html2canvas(element, {
+  //         scale: 3,
+  //         useCORS: true,
+  //       })
+  //       const imgData = canvas.toDataURL('image/png')
+
+  //       const pdf = new jsPDF({
+  //         orientation: "portrait",
+  //         unit: 'mm',
+  //         format: "A4"
+  //       })
+
+  //       const pdfWidth = pdf.internal.pageSize.getWidth()
+  //       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+
+  //       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+  //       pdf.save(`cv.pdf`)
+
+
+  //     } catch (error) {
+  //       console.error('Erreur lors de la génération du PDF :', error);
+  //     }
+  //   }
+  // }
+
+  const handleDownloadPdf = async () => {
+    const element = cvPreviewRef.current;
+    if (!element) return;
+
+    // 1. Réduire l'échelle à 1.5 (suffisant pour une bonne qualité A4)
+    const canvas = await html2canvas(element, {
+      scale: 1.5,
+      useCORS: true
+    });
+
+    // 2. Utiliser image/jpeg avec une qualité de 0.7 (70%) au lieu de PNG
+    const imgData = canvas.toDataURL('image/jpeg', 0.7);
+
+    // 3. Activer la compression interne de jsPDF
+    const pdf = new jsPDF({
+      orientation: 'p',
+      unit: 'mm',
+      format: 'a4',
+      compress: true
+    });
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // Première page
+    pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+    heightLeft -= pdfHeight;
+
+    // Pages suivantes
+    while (heightLeft > 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pdfHeight;
+    }
+
+    pdf.save('export_optimise.pdf');
+  };
+
+
+
   return (
-    <div className={`relative min-h-screen font-inter bg-slate-900 text-white`}> 
-      
+    <div ref={cvPreviewRef} className={`relative min-h-screen font-inter bg-slate-900 text-white`}>
+
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
 
       <div className="particle p1"></div>
       <div className="particle p2"></div>
       <div className="particle p3"></div>
       <div className="particle p4"></div>
-      
+
       <div className="flex min-h-screen font-inter relative z-10">
         <div className="flex-1 flex flex-col">
-            {/* <header className='lg:hidden flex justify-between items-center w-full p-4 glass-nav sticky top-0 z-20 border-b border-primary-800/50'>
-                <h1 className="text-dark-text text-xl font-semibold">
-                    {NAV_LINKS.find(link => link.key === currentPage)?.label || 'Budget Classe'}
-                </h1>
-                <button className='text-dark-text-secondary hover:text-primary' onClick={() => setIsMobileMenuOpen(true)}>
-                    <Menu className='w-6 h-6'/>
-                </button>
-            </header> */}
 
-            <main className="flex-1 justify-between items-center px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
-                <div className="max-w-7xl mx-auto">
-                    <DashboardView />
-                    <div className="mt-8 space-y-8">
-                        <Charts />
-                        <TransactionsTable />
-                        <AutreRevenueTable />
-                        <DepensesTable />
-                    </div>
-                </div>
-            </main>
+
+          <main className="flex-1 justify-between items-center px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
+            <div id="budget-content" className="max-w-7xl mx-auto p-4 lg:p-8 rounded-3xl">
+              <DashboardView handleDownloadPdf={handleDownloadPdf} />
+              <div className="mt-8 space-y-8">
+                <Charts />
+                <TransactionsTable />
+                <AutreRevenueTable />
+                <DepensesTable />
+              </div>
+            </div>
+          </main>
         </div>
       </div>
     </div>
